@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Iceberg&display=swap" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+            background-color: #fff;
+        }
+        #calculator {
+            display: inline-block;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #eee;
+            margin: 50px auto;
+            filter: drop-shadow(0 0 10px #333);
+        }
+        button {
+            width: 50px;
+            padding: 10px;
+            font: 1.6em;
+            margin: 5px;
+            border: 1px solid #000;
+            box-shadow: 3px 3px 3px #666;
+        }
+        button:active {
+            box-shadow: 0 0 3px #666;
+        }
+        #eq {
+            width: 115px;
+            background: orange;
+        }
+        #display {
+            width: 220px;
+            padding: 10px;
+            margin: 5px;
+            font: 2em Iceberg;
+            border-radius: 5px;
+            border: 1px solid #333;
+            box-shadow: inset 2px 2px 1px #666 ;
+            text-align: right;
+        }
+
+        #darkmode-toggle-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        label {
+            width: 100px;
+            height: 40px;
+            position: relative;
+            display: block;
+            background: #ebebeb;
+            border-radius: 200px;
+            box-shadow: inset 0px 5px 15px rgba(0, 0, 0, 0.4), inset 0px -5px 15px rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+        }
+
+        label:after {
+            content: "";
+            width: 35px;
+            height: 35px;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            background: linear-gradient(180deg, #ffcc89, #d8860b);
+            border-radius: 180px;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #darkmode-toggle {
+            width: 0;
+            height: 0;
+            visibility: hidden;
+        }
+
+        #darkmode-toggle:checked + label {
+            background: #242424;
+        }
+
+        #darkmode-toggle:checked + label:after {
+            left: 100px;
+            transform: translateX(-100%);
+            background: linear-gradient(180deg, #777, #3a3a3a);
+        }
+
+        label,
+        label:after {
+            transition: 0.3s;
+        }
+
+        label:active:after {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <div>
+            <input type="text" id="display">
+        </div>
+        <div>
+            <button style="visibility: hidden;"></button>
+            <button onclick="clean()">C</button>
+            <button onclick="back()">⇦</button>
+            <button onclick="press('/')">&divide;</button>
+        </div>
+        <div>
+            <button onclick="press('7')">7</button>
+            <button onclick="press('8')">8</button>
+            <button onclick="press('9')">9</button>
+            <button onclick="press('*')">&times;</button>
+        </div>
+        <div>
+            <button onclick="press('4')">4</button>
+            <button onclick="press('5')">5</button>
+            <button onclick="press('6')">6</button>
+            <button onclick="press('-')">-</button>
+        </div>
+        <div>
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2</button>
+            <button onclick="press('3')">3</button>
+            <button onclick="press('+')">+</button>
+        </div>
+        <div>
+            <button onclick="press('0')">0</button>
+            <button onclick="press('.')">.</button>
+            <button onclick="calc()" id="eq">=</button>
+        </div>
+    </div>
+    <div id="darkmode-toggle-container">
+        <input type="checkbox" id="darkmode-toggle">
+        <label for="darkmode-toggle"></label>
+    </div>
+</body>
+<script>
+    const display = document.getElementById("display");
+    const darkModeToggle = document.getElementById("darkmode-toggle");
+    const body = document.body;
+    const calculator = document.getElementById("calculator");
+
+    function press(x) {
+        if (x === '/') {
+            x = '÷';
+        } else if (x === '*') {
+            x = '×';
+        }
+
+        const operators = ['+', '-', '×', '÷'];
+        const lastChar = display.value.slice(-1);
+
+        if (operators.includes(x)) {
+            if (display.value === '' && x === '-') {
+                display.value += x;
+            } else if (operators.includes(lastChar)) {
+                display.value = display.value.slice(0, -1) + x;
+            } else {
+                display.value += x;
+            }
+        } else {
+            display.value += x;
+        }
+    }
+
+    function calc() {
+        let expression = display.value;
+        expression = expression.replace(/÷/g, '/');
+        expression = expression.replace(/×/g, '*');
+
+        try {
+            const result = new Function('return ' + expression)();
+            display.value = parseFloat(result.toFixed(10));
+            if (display.value.length > 14) {
+                display.value = 'The answer is big';
+            }
+        } catch (error) {
+            display.value = 'Error';
+        }
+    }
+
+    function clean() {
+        display.value = '';
+    }
+
+    function back() {
+        display.value = display.value.slice(0, -1);
+    }
+
+    darkModeToggle.addEventListener("change", function () {
+        if (this.checked) {
+            body.style.backgroundColor = "#333";
+            calculator.style.filter = "drop-shadow(0 0 10px #6ff8f8)";
+            
+        } else {
+            body.style.backgroundColor = "#fff";
+            calculator.style.filter = "drop-shadow(0 0 10px #333)";
+        }
+    });
+</script>
+
+</html>
